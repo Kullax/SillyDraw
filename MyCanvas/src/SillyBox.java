@@ -9,6 +9,12 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.SocketException;
 import java.util.*;
 import jpen.event.PenAdapter;
 import javax.swing.*;
@@ -19,7 +25,7 @@ import javax.swing.plaf.LayerUI;
 
 import java.awt.image.ImageObserver;
 
-class MyLayer extends Layer{
+class MyLayer extends Layer implements java.io.Serializable {
     public ArrayList<Stroke> strokes = new ArrayList<Stroke>();
     public String name = "";
 
@@ -105,7 +111,7 @@ class MyLine {
     public float getPressure(){ return pressure; };
 }
 
-class Stroke{
+class Stroke implements java.io.Serializable{
     Set<MyLine> lines;
     Color color;
     public Stroke(Set<MyLine> lines, Color black){
@@ -119,6 +125,10 @@ class Stroke{
  * Created by Martin on 21-01-2017.
  */
 public class SillyBox extends JLayeredPane implements KeyListener {
+
+    Socket socketToServer = null;
+    static ObjectInputStream inputStream;
+    static ObjectOutputStream outStream;
 
     boolean ERASE = false;
     boolean STROKE_START = false;
@@ -187,7 +197,66 @@ public class SillyBox extends JLayeredPane implements KeyListener {
         return new Vec2d(dX, dY);
     }
 
+    public void HandleIncomingObject(Object o){
+        if(o instanceof Stroke){
+            layers.get(selectedLayer).strokes.add((Stroke) o);
+            repaint();
+        }else{
+            System.out.println("Unknown Input");
+        }
+    }
+
+
+    class ClientHandler extends Thread {
+        private Socket socket;
+
+        ClientHandler(Socket socket) throws IOException {
+            this.socket = socket;
+            outStream = new ObjectOutputStream(socket.getOutputStream());
+            try{
+                inputStream = new ObjectInputStream(socket.getInputStream());
+            }catch (EOFException e){
+                inputStream.close();
+            }
+        }
+
+        @Override
+        public void run() {
+            System.out.println("Starting a Run");
+            boolean running = true;
+            while (running) {
+                try {
+                    Object o = inputStream.readObject();
+                    HandleIncomingObject( o);
+                } catch (SocketException e){
+                    running = false;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("Ending a Run");
+
+            try {
+                inputStream.close();
+                outStream.close();
+                socket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public SillyBox() {
+        try {
+            socketToServer = new Socket("localhost", 15001);
+            ClientHandler client = new ClientHandler(socketToServer);
+            client.start();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
         MyLayer layer_0 = new MyLayer();
         layer_0.setVisible(true);
         layers.add(layer_0);
@@ -213,9 +282,17 @@ public class SillyBox extends JLayeredPane implements KeyListener {
                     return;
                 }
                 STROKE_START = false;
-                layers.get(selectedLayer).strokes.add(new Stroke(lines, color));
+                Stroke new_stroke = new Stroke(lines, color);
+                layers.get(selectedLayer).strokes.add(new_stroke);
                 lines = new HashSet<MyLine>();
                 repaint();
+
+                try {
+                    outStream.writeObject(new_stroke);
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+
             }
         });
 
@@ -254,12 +331,9 @@ public class SillyBox extends JLayeredPane implements KeyListener {
                             } else {
                                 continue;
                             }
-
                             if (getDistance(l.getX1(), l.getY1(), l.getX2(), l.getY2()) <= 5 || Double.isFinite(getDistance(e.getX(), e.getY(), l.getX1(), l.getY1())))
                                 if(getDistance(e.getX(), e.getY(), l.getX1(), l.getY1()) <= 5)
                                     iter.remove();
-
-
                         }
                     }
                     repaint();
