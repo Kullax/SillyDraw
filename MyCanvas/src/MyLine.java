@@ -4,7 +4,7 @@ import java.awt.geom.Rectangle2D;
 /**
  * Created by Martin on 03-Feb-17.
  */
-public class MyLine {
+public class MyLine implements java.io.Serializable{
     private double x1, x2, y1, y2;
     private float pressure;
     public double getX1() {

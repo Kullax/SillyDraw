@@ -146,7 +146,7 @@ public class SillyBox extends JLayeredPane implements KeyListener {
 
     public SillyBox() {
         try {
-            socketToServer = new Socket("localhost", 15001);
+            socketToServer = new Socket("s1.feral.dk", 15001);
             ClientHandler client = new ClientHandler(socketToServer);
             client.start();
         } catch (IOException e1) {
