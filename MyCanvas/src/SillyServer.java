@@ -85,18 +85,14 @@ public class SillyServer{
                 try {
                     MyStroke o;
                     while(((o = (MyStroke) inputStream.readObject()) != null)) {
-
-                        if (o instanceof MyStroke) {
-                            System.out.println("Read Stroke: " + ((MyStroke) o));
-                            synchronized (this) {
-                                for (int i = 0; i < maxClientsCount; i++) {
-                                    if (threads[i] != null && threads[i] != this) {
-                                        threads[i].outStream.writeObject(o);
-                                    }
+                        System.out.println("Read Stroke: " + ((MyStroke) o));
+                        synchronized (this) {
+                            for (int i = 0; i < maxClientsCount; i++) {
+                                if (threads[i] != null && threads[i] != this) {
+                                    threads[i].outStream.writeObject(o);
                                 }
                             }
-                        } else
-                            System.out.println("Read object: " + o);
+                        }
                     }
                 } catch (SocketException e){
                     running = false;
