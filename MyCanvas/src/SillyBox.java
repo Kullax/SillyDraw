@@ -15,6 +15,10 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.*;
 import jpen.event.PenAdapter;
+import utils.MyLayer;
+import utils.MyLine;
+import utils.MyStroke;
+
 import javax.swing.*;
 import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ChangeEvent;
@@ -24,7 +28,7 @@ import javax.swing.event.ChangeListener;
 /**
  * Created by Martin on 03-Feb-17.
  */
-class MyLayer extends Layer implements java.io.Serializable {
+/*class MyLayer extends Layer implements java.io.Serializable {
     public ArrayList<MyStroke> strokes = new ArrayList<MyStroke>();
     public String name = "";
 
@@ -55,7 +59,7 @@ class MyLayer extends Layer implements java.io.Serializable {
 /**
  * Created by Martin on 03-Feb-17.
  */
-class MyLine implements java.io.Serializable{
+/*class MyLine implements java.io.Serializable{
     private double x1, x2, y1, y2;
     private float pressure;
     public double getX1() {
@@ -116,7 +120,7 @@ class MyLine implements java.io.Serializable{
 /**
  * Created by Martin on 03-Feb-17.
  */
-class MyStroke implements java.io.Serializable {
+/*class MyStroke implements java.io.Serializable {
     Set<MyLine> lines;
     Color color;
 
@@ -137,7 +141,7 @@ public class SillyBox extends JLayeredPane implements KeyListener {
 
     boolean ERASE = false;
     boolean STROKE_START = false;
-    ArrayList<MyLayer> layers = new ArrayList<MyLayer>();
+    ArrayList<MyLayer> layers;
 
     int selectedLayer = 0;
 
@@ -255,7 +259,7 @@ public class SillyBox extends JLayeredPane implements KeyListener {
 
     public SillyBox() {
         try {
-            socketToServer = new Socket("localhost", 15001);
+            socketToServer = new Socket("s1.feral.dk", 15001);
             ClientHandler client = new ClientHandler(socketToServer);
             client.start();
         } catch (IOException e1) {
@@ -264,6 +268,7 @@ public class SillyBox extends JLayeredPane implements KeyListener {
 
         MyLayer layer_0 = new MyLayer();
         layer_0.setVisible(true);
+        layers = new ArrayList<MyLayer>();
         layers.add(layer_0);
 
         MyLayer layer_1 = new MyLayer();
