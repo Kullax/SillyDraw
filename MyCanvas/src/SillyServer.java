@@ -1,10 +1,8 @@
 import javax.net.ServerSocketFactory;
-import java.awt.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Set;
 
 /**
  * Created by Martin on 02-02-2017.
@@ -85,11 +83,11 @@ public class SillyServer{
             boolean running = true;
             while (running) {
                 try {
-                    Object o;
-                    while((o = inputStream.readObject()) != null) {
+                    MyStroke o;
+                    while(((o = (MyStroke) inputStream.readObject()) != null)) {
 
-                        if (o instanceof Stroke) {
-                            System.out.println("Read Stroke: " + ((Stroke) o));
+                        if (o instanceof MyStroke) {
+                            System.out.println("Read Stroke: " + ((MyStroke) o));
                             synchronized (this) {
                                 for (int i = 0; i < maxClientsCount; i++) {
                                     if (threads[i] != null && threads[i] != this) {

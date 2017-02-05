@@ -25,7 +25,7 @@ import javax.swing.event.ChangeListener;
  * Created by Martin on 03-Feb-17.
  */
 class MyLayer extends Layer implements java.io.Serializable {
-    public ArrayList<Stroke> strokes = new ArrayList<Stroke>();
+    public ArrayList<MyStroke> strokes = new ArrayList<MyStroke>();
     public String name = "";
 
     public double getOpacity() {
@@ -116,11 +116,11 @@ class MyLine implements java.io.Serializable{
 /**
  * Created by Martin on 03-Feb-17.
  */
-class Stroke implements java.io.Serializable {
+class MyStroke implements java.io.Serializable {
     Set<MyLine> lines;
     Color color;
 
-    public Stroke(Set<MyLine> lines, Color black) {
+    public MyStroke(Set<MyLine> lines, Color black) {
         this.lines = lines;
         this.color = black;
     }
@@ -165,7 +165,7 @@ public class SillyBox extends JLayeredPane implements KeyListener {
         for (MyLayer layer : layers){
             if (!layer.isVisible())
                 continue;
-            for(Stroke s : layer.strokes){
+            for(MyStroke s : layer.strokes){
                 for(MyLine l : s.lines){
                     g2.setColor(new Color(s.color.getRed(), s.color.getGreen(), s.color.getBlue(),
                             (int)(255* (s.color.getTransparency() * layers.get(layers.indexOf(layer)).getOpacity()))));
@@ -203,8 +203,8 @@ public class SillyBox extends JLayeredPane implements KeyListener {
     }
 
     public void HandleIncomingObject(Object o){
-        if(o instanceof Stroke){
-            layers.get(selectedLayer).strokes.add((Stroke) o);
+        if(o instanceof MyStroke){
+            layers.get(selectedLayer).strokes.add((MyStroke) o);
             repaint();
         }else{
             System.out.println("Unknown Input");
@@ -287,7 +287,7 @@ public class SillyBox extends JLayeredPane implements KeyListener {
                     return;
                 }
                 STROKE_START = false;
-                Stroke new_stroke = new Stroke(lines, color);
+                MyStroke new_stroke = new MyStroke(lines, color);
                 layers.get(selectedLayer).strokes.add(new_stroke);
                 lines = new HashSet<MyLine>();
                 repaint();
@@ -305,7 +305,7 @@ public class SillyBox extends JLayeredPane implements KeyListener {
 
             public void mouseDragged(MouseEvent e) {
                 if(ERASE) {
-                    for (Stroke s : layers.get(selectedLayer).strokes) {
+                    for (MyStroke s : layers.get(selectedLayer).strokes) {
                         Iterator<MyLine> iter = s.lines.iterator();
 
                         while (iter.hasNext()) {
